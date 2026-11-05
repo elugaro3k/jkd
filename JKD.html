@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutina Jeet Kune Do</title>
+    <style>
+        :root {
+            --primary: #e74c3c;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #2980b9;
+            --light-bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #7f8c8d;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            align-self: flex-start;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--secondary), #34495e);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { margin: 0; font-size: 1.5rem; font-weight: 800; }
+        .header p { margin: 8px 0 0; font-size: 1rem; opacity: 0.9; }
+        .routine-selector { padding: 30px 20px; }
+        .routine-selector h2 { text-align: center; margin-bottom: 24px; color: var(--secondary); }
+        .routine-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .routine-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .routine-card h3 { margin: 0 0 8px; color: var(--primary); font-size: 1.2rem; }
+        .routine-card .meta { font-size: 0.9rem; color: var(--text-light); margin-bottom: 10px; }
+        .routine-card .desc { font-size: 0.95rem; line-height: 1.5; }
+        .badge {
+            display: inline-block;
+            background: var(--info);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+        .badge.cardio { background: var(--primary); }
+        .exercise-card { padding: 24px; border-bottom: 1px solid #eee; }
+        .exercise-header { margin-bottom: 16px; }
+        .exercise-counter {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .exercise-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 4px 0; }
+        .exercise-subtitle { font-size: 0.95rem; color: var(--text-light); font-weight: 500; }
+        .exercise-desc {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 800;
+            text-align: center;
+            color: var(--secondary);
+            margin: 10px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .interval-status {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .status-active { background: #e8f8f5; color: var(--success); }
+        .status-rest { background: #fef9e7; color: var(--warning); }
+        .status-continuous { background: #ebf5fb; color: var(--info); }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+            transition: transform 0.1s, opacity 0.2s;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-start { background: var(--success); }
+        .btn-pause { background: var(--warning); }
+        .btn-reset { background: #95a5a6; }
+        .btn-next { background: var(--info); }
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s linear;
+        }
+        .final-screen { text-align: center; padding: 40px 20px; }
+        .final-screen h2 { color: var(--success); font-size: 2rem; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- PANTALLA: SELECTOR -->
+    <div id="screen-selector">
+        <div class="header">
+            <h1>🥋 Centro de Rutinas</h1>
+            <p>  </p>
+        </div>
+        <div class="routine-selector">
+            <h2> </h2>
+            <div class="routine-card" onclick="startRoutine('jkd')">
+                <h3>🥋 Jeet Kune Do (JKD) - Interceptación y Flujo</h3>
+                <div class="meta">
+                    <span class="badge cardio">Técnica / Cardio</span>
+                    <span class="badge">4 Fases</span>
+                    <span class="badge">27 Minutos</span>
+                </div>
+                <div class="desc">
+                    Rutina fluida y dinámica basada en los principios de Jeet Kune Do. Enfocada en la interceptación, cambio de guardia bilateral, combinaciones de kickboxing y desplazamiento táctico.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA: RUTINA ACTIVA -->
+    <div id="screen-routine" class="hidden">
+        <div class="header">
+            <h1 id="routine-title">Rutina</h1>
+            <p id="routine-subtitle">Subtítulo</p>
+        </div>
+        <div id="exercise-area"></div>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   DATOS DE LA RUTINA (SOLO JKD)
+   ============================================================ */
+const routines = {
+    'jkd': {
+        title: "🥋 Jeet Kune Do (JKD) - Interceptación y Flujo",
+        subtitle: "Rutina Técnica y Cardio (27 Minutos)",
+        type: 'interval',
+        exercises: [
+            {
+                title: "FASE 1: Calentamiento y movilidad de pie",
+                subtitle: "5 Minutos | 1 minuto por ejercicio, sin pausas",
+                desc: "1. <b>Rotación articular (1 min):</b> Cuello, hombros, muñecas y caderas.<br>2. <b>Rebote en guardia (1 min):</b> 30 seg en tu guardia habitual / 30 seg en la guardia opuesta.<br>3. <b>Péndulo y esquivas (1 min):</b> Movimiento lateral de torso con guardia alta.<br>4. <b>Elevación de rodillas (1 min):</b> Alternando pierna izquierda y pierna derecha constantemente.<br>5. <b>Rotación de torso con puños (1 min):</b> Extendiendo brazo izquierdo y brazo derecho alternadamente.",
+                totalIntervals: 1,
+                activeTime: 300,
+                restTime: 0,
+                isContinuous: true
+            },
+            {
+                title: "FASE 2: Trabajo de pie e intercepción",
+                subtitle: "5 Minutos | Desplazamiento y Patadas",
+                desc: "<b>2.1. Desplazamiento Step & Slide (2 min):</b><br>• Minuto 1: Guardia habitual. Avanzas iniciando con el pie izquierdo; retrocedes iniciando con el pie derecho.<br>• Minuto 2: Cambio de guardia. Avanzas iniciando con el pie derecho; retrocedes iniciando con el pie izquierdo.<br><br><b>2.2. Patada de intercepción / Side Kick (3 min):</b><br>• Primeros 90 seg: Pierna Izquierda adelantada (Patada lateral rápida al frente).<br>• Últimos 90 seg: Pierna Derecha adelantada (Patada lateral rápida al frente).",
+                totalIntervals: 1,
+                activeTime: 300,
+                restTime: 0,
+                isContinuous: true
+            },
+            {
+                title: "FASE 3: Combinaciones JKD / Kickboxing",
+                subtitle: "12 Minutos | 4 asaltos (2 min trabajo + 1 min descanso)",
+                desc: "<b>Asalto 1: Línea directa e intercepción.</b> Directo de mano Adelantada, Cruzado potente de mano Trasera, Patada baja/media con pierna Trasera.<br><b>Asalto 2: Entrada a distancia corta.</b> Desvío (Pak Sao) con mano Adelantada, Directo rápido de mano Adelantada, Codazo descendente con brazo Trasero, Rodillazo frontal con pierna Trasera.<br><b>Asalto 3: Respuesta angular / Sidestep.</b> Paso diagonal evasivo con pie Adelantado, Croché/Hook con mano Adelantada, Patada frontal ejecutada con la pierna Trasera.<br><b>Asalto 4: Intercepción lineal y salida táctica.</b> Directo adelantado de intercepción con avance, Cruzado directo de mano trasera, Desplazamiento de retirada balística inmediata.<br><br><i>⚠️ Nota: En el minuto 1:00 de cada asalto, cambias de guardia para trabajar el otro costado simétricamente.</i>",
+                totalIntervals: 4,
+                activeTime: 120,
+                restTime: 60,
+                isContinuous: false
+            },
+            {
+                title: "FASE 4: Enfriamiento y Estiramiento Final",
+                subtitle: "5 Minutos | Vuelta a la calma de pie, sin impacto",
+                desc: "1. <b>Respiración y Descenso (1 min):</b> Caminata suave en el lugar combinada con respiraciones profundas.<br>2. <b>Tren Superior y Hombros (1 min):</b> Cruce de brazo por delante del pecho (30 seg por brazo), estiramiento de tríceps por encima de la cabeza (30 seg por lado).<br>3. <b>Flexores de Cadera y Tren Inferior (2 min):</b> Desplante estático bajo sin rebote (1 min por pierna). Apertura moderada de piernas con flexión frontal de tronco (1 min).<br>4. <b>Relajación Final (1 min):</b> Giros suaves de cuello, rotación holgada de hombros y respiración diafragmática de cierre.",
+                totalIntervals: 1,
+                activeTime: 300,
+                restTime: 0,
+                isContinuous: true
+            }
+        ]
+    }
+};
+
+/* ============================================================
+   ESTADO GLOBAL
+   ============================================================ */
+let currentRoutineKey = null;
+let state = {
+    currentExerciseIndex: 0,
+    currentInterval: 1,
+    timeLeft: 0,
+    isRunning: false,
+    isResting: false,
+    timerId: null
+};
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+function startRoutine(key) {
+    currentRoutineKey = key;
+    resetState();
+    document.getElementById('screen-selector').classList.add('hidden');
+    document.getElementById('screen-routine').classList.remove('hidden');
+    document.getElementById('routine-title').textContent = routines[key].title;
+    document.getElementById('routine-subtitle').textContent = routines[key].subtitle;
+    renderIntervalExercise();
+}
+
+function resetState() {
+    stopTimer();
+    state = { currentExerciseIndex: 0, currentInterval: 1, timeLeft: 0, isRunning: false, isResting: false, timerId: null };
+}
+
+/* ============================================================
+   RENDERIZADO DE INTERVALOS
+   ============================================================ */
+function renderIntervalExercise() {
+    const routine = routines[currentRoutineKey];
+    const ex = routine.exercises[state.currentExerciseIndex];
+    
+    state.timeLeft = ex.activeTime;
+    state.isResting = false;
+    state.currentInterval = 1;
+
+    let statusClass = ex.isContinuous ? 'status-continuous' : 'status-active';
+    let statusText = ex.isContinuous ? 'Fase Continua (Sin intervalos)' : `Intervalo Activo ${state.currentInterval} de ${ex.totalIntervals}`;
+
+    const area = document.getElementById('exercise-area');
+    area.innerHTML = `
+        <div class="exercise-card">
+            <div class="exercise-header">
+                <div class="exercise-counter">Fase ${state.currentExerciseIndex + 1} de ${routine.exercises.length}</div>
+                <div class="exercise-title">${ex.title}</div>
+                <div class="exercise-subtitle">${ex.subtitle}</div>
+            </div>
+            <div class="exercise-desc">${ex.desc}</div>
+            <div class="timer-display" id="timer">${formatTime(state.timeLeft)}</div>
+            <div class="interval-status ${statusClass}" id="status">${statusText}</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-start" id="btn-start" onclick="startTimer()">▶ Iniciar</button>
+                <button class="btn btn-pause" id="btn-pause" onclick="pauseTimer()" disabled>⏸ Pausar</button>
+                <button class="btn btn-reset" onclick="resetIntervalExercise()">↺ Reiniciar</button>
+            </div>
+            <div class="controls">
+                <button class="btn btn-next" onclick="nextIntervalExercise()">Siguiente Fase →</button>
+            </div>
+        </div>
+    `;
+    updateIntervalProgress();
+}
+
+function updateIntervalUI() {
+    const ex = routines[currentRoutineKey].exercises[state.currentExerciseIndex];
+    const timerEl = document.getElementById('timer');
+    const statusEl = document.getElementById('status');
+    
+    if(timerEl) timerEl.textContent = formatTime(state.timeLeft);
+    
+    if(!ex.isContinuous && statusEl) {
+        if(state.isResting) {
+            statusEl.className = 'interval-status status-rest';
+            statusEl.textContent = `⏱️ Descanso | Siguiente: Intervalo ${state.currentInterval + 1} de ${ex.totalIntervals}`;
+        } else {
+            statusEl.className = 'interval-status status-active';
+            statusEl.textContent = `💥 Intervalo Activo ${state.currentInterval} de ${ex.totalIntervals}`;
+        }
+    }
+    updateIntervalProgress();
+}
+
+function updateIntervalProgress() {
+    const ex = routines[currentRoutineKey].exercises[state.currentExerciseIndex];
+    const totalTime = ex.isContinuous ? ex.activeTime : ex.activeTime + ex.restTime;
+    const progressEl = document.getElementById('progress');
+    if(progressEl) {
+        const pct = ((totalTime - state.timeLeft) / totalTime) * 100;
+        progressEl.style.width = `${pct}%`;
+    }
+}
+
+function handleIntervalEnd() {
+    const ex = routines[currentRoutineKey].exercises[state.currentExerciseIndex];
+    
+    if(ex.isContinuous) {
+        pauseTimer();
+        nextIntervalExercise();
+        return;
+    }
+
+    if(!state.isResting) {
+        state.isResting = true;
+        state.timeLeft = ex.restTime;
+        updateIntervalUI();
+    } else {
+        state.isResting = false;
+        state.currentInterval++;
+        
+        if(state.currentInterval > ex.totalIntervals) {
+            pauseTimer();
+            nextIntervalExercise();
+        } else {
+            state.timeLeft = ex.activeTime;
+            updateIntervalUI();
+        }
+    }
+}
+
+function resetIntervalExercise() {
+    pauseTimer();
+    renderIntervalExercise();
+}
+
+function nextIntervalExercise() {
+    pauseTimer();
+    const routine = routines[currentRoutineKey];
+    if(state.currentExerciseIndex < routine.exercises.length - 1) {
+        state.currentExerciseIndex++;
+        renderIntervalExercise();
+    } else {
+        showFinalScreen();
+    }
+}
+
+/* ============================================================
+   TIMER COMÚN
+   ============================================================ */
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function startTimer() {
+    if(state.isRunning) return;
+    state.isRunning = true;
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-pause').disabled = false;
+
+    state.timerId = setInterval(() => {
+        state.timeLeft--;
+        if(state.timeLeft <= 0) {
+            handleIntervalEnd();
+        } else {
+            updateIntervalUI();
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    state.isRunning = false;
+    clearInterval(state.timerId);
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-pause').disabled = true;
+}
+
+function stopTimer() {
+    state.isRunning = false;
+    clearInterval(state.timerId);
+}
+
+/* ============================================================
+   PANTALLA FINAL
+   ============================================================ */
+function showFinalScreen() {
+    stopTimer();
+    document.getElementById('exercise-area').innerHTML = `
+        <div class="final-screen">
+            <h2>✅ ¡Rutina Completada!</h2>
+            <p>Has terminado el entrenamiento de Jeet Kune Do con éxito.</p>
+            <div class="controls" style="margin-top:20px;">
+                <button class="btn btn-start" onclick="resetState(); renderIntervalExercise();" style="flex:1;">🔄 Repetir Rutina</button>
+                <button class="btn btn-next" onclick="location.reload();" style="flex:1;">🏠 Menú Principal</button>
+            </div>
+        </div>
+    `;
+}
+</script>
+
+</body>
+</html>
